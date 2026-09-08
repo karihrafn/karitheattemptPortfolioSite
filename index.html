@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kári the Attempt</title>
+<meta name="description" content="Kári the Attempt — music, photos, and projects.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Patrick+Hand+SC&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="logo">KÁRI <span>THE ATTEMPT</span></a>
+    <nav class="nav-links">
+      <a href="index.html#music" class="active">Music</a>
+      <a href="index.html#gallery">Photos</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+    <button class="nav-toggle" aria-label="Toggle menu">☰</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">Musician / Artist</p>
+      <h1>Kári the Attempt</h1>
+      <p class="tagline">
+        Songs written in the space between trying and finishing.
+        Replace this line with a short bio — where you're from, what you make, and why it sounds the way it does.
+      </p>
+      <div class="hero-actions">
+        <a href="#music" class="btn btn-primary">Listen now</a>
+        <a href="#contact" class="btn btn-outline">Get in touch</a>
+      </div>
+    </div>
+    <div class="hero-portrait">
+      <img src="assets/images/portrait.svg" alt="Portrait of Kári the Attempt">
+    </div>
+  </div>
+</section>
+
+<section class="block" id="music">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Listen</p>
+        <h2>Music</h2>
+        <p>A few tracks to start with. Swap the audio files in <code>assets/audio/</code> and update the titles below.</p>
+      </div>
+    </div>
+
+    <div class="tracks">
+      <div class="track">
+        <span class="track-num">01</span>
+        <div class="track-info">
+          <h3>Track One</h3>
+          <p>Short description or lyric fragment goes here.</p>
+          <audio controls src="assets/audio/track-1.mp3"></audio>
+        </div>
+        <div class="track-links">
+          <a href="#">Spotify</a>
+          <a href="#">Apple&nbsp;Music</a>
+        </div>
+      </div>
+
+      <div class="track">
+        <span class="track-num">02</span>
+        <div class="track-info">
+          <h3>Track Two</h3>
+          <p>Short description or lyric fragment goes here.</p>
+          <audio controls src="assets/audio/track-2.mp3"></audio>
+        </div>
+        <div class="track-links">
+          <a href="#">Spotify</a>
+          <a href="#">Apple&nbsp;Music</a>
+        </div>
+      </div>
+
+      <div class="track">
+        <span class="track-num">03</span>
+        <div class="track-info">
+          <h3>Track Three</h3>
+          <p>Short description or lyric fragment goes here.</p>
+          <audio controls src="assets/audio/track-3.mp3"></audio>
+        </div>
+        <div class="track-links">
+          <a href="#">Spotify</a>
+          <a href="#">Apple&nbsp;Music</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="gallery">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Look</p>
+        <h2>Photos</h2>
+        <p>Live shots, cover art, behind the scenes. Replace the files in <code>assets/images/</code> to update this grid.</p>
+      </div>
+    </div>
+    <div class="gallery">
+      <a href="assets/images/gallery-1.svg" target="_blank"><img src="assets/images/gallery-1.svg" alt="Photo 1"></a>
+      <a href="assets/images/gallery-2.svg" target="_blank"><img src="assets/images/gallery-2.svg" alt="Photo 2"></a>
+      <a href="assets/images/gallery-3.svg" target="_blank"><img src="assets/images/gallery-3.svg" alt="Photo 3"></a>
+      <a href="assets/images/gallery-4.svg" target="_blank"><img src="assets/images/gallery-4.svg" alt="Photo 4"></a>
+      <a href="assets/images/gallery-5.svg" target="_blank"><img src="assets/images/gallery-5.svg" alt="Photo 5"></a>
+      <a href="assets/images/gallery-6.svg" target="_blank"><img src="assets/images/gallery-6.svg" alt="Photo 6"></a>
+    </div>
+  </div>
+</section>
+
+<section class="block contact-block" id="contact" style="border-bottom:none;">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">Reach out</p>
+      <h2>Contact</h2>
+      <p class="tagline" style="margin-bottom:2rem;">
+        For bookings, collabs, or just to say hi — send an email or find me on socials.
+      </p>
+      <a href="mailto:your@email.com" class="btn btn-primary">your@email.com</a>
+    </div>
+    <div class="socials">
+      <a href="https://instagram.com/" target="_blank" rel="noopener">Instagram <span>↗</span></a>
+      <a href="https://open.spotify.com/" target="_blank" rel="noopener">Spotify <span>↗</span></a>
+      <a href="https://youtube.com/" target="_blank" rel="noopener">YouTube <span>↗</span></a>
+      <a href="https://soundcloud.com/" target="_blank" rel="noopener">SoundCloud <span>↗</span></a>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>© <span id="year"></span> Kári the Attempt</span>
+    <span><a href="portfolio.html">Other projects →</a></span>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
