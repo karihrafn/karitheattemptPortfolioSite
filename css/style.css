@@ -17,9 +17,9 @@
   --accent: var(--blue);
   --accent-dim: var(--blue-line);
 
-  --font-display: 'Patrick Hand', cursive;
-  --font-caps: 'Patrick Hand SC', cursive;
-  --font-body: 'Nunito', sans-serif;
+  --font-display: 'Playfair Display', serif;
+  --font-caps: 'Playfair Display', serif;
+  --font-body: 'Lora', serif;
   --maxw: 1120px;
 }
 
@@ -160,7 +160,7 @@ h3 { font-size: 1.5rem; }
   inset: 0;
   background-image:
     linear-gradient(180deg, rgba(242, 246, 250, .94) 0%, rgba(242, 246, 250, .82) 45%, var(--bg) 100%),
-    url('assets/images/ep-cover.jpg');
+    url('../assets/images/ep-cover.jpg');
   background-size: cover;
   background-position: center 20%;
   filter: grayscale(1) contrast(.9) brightness(1.15);
@@ -197,6 +197,12 @@ h3 { font-size: 1.5rem; }
   border: 1px solid var(--border);
   aspect-ratio: 9/11;
   box-shadow: 0 18px 40px -20px rgba(38, 49, 61, .3);
+}
+
+.hero-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 @media (max-width: 820px) {
@@ -322,6 +328,12 @@ section.block {
   border: 1px solid var(--border);
   aspect-ratio: 1/1;
   transition: transform .2s ease, border-color .2s ease;
+}
+
+.gallery a img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .gallery a:hover {
