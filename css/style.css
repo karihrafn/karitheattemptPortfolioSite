@@ -494,9 +494,9 @@ body, a, button, audio, input, label, select { cursor: none !important; }
 
 .track-title {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.6rem;
-  margin-bottom: .15rem;
+  margin-bottom: 0.5rem;
 }
 
 .track-title h3 { margin: 0; }
