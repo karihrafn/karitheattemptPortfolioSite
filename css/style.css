@@ -33,7 +33,7 @@ body {
   color: var(--text);
   font-family: var(--font-body);
   font-size: 1.12rem;
-  line-height: 1.65;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -149,7 +149,7 @@ h3 { font-size: 1.5rem; }
 
 .hero {
   position: relative;
-  padding: 6rem 0 6.5rem;
+  padding: 3.5rem 0 4rem;
   border-bottom: 1px solid var(--border);
   overflow: hidden;
 }
@@ -186,7 +186,7 @@ h3 { font-size: 1.5rem; }
   color: var(--text-dim);
   font-size: 1.25rem;
   max-width: 46ch;
-  margin-bottom: 2rem;
+  margin-bottom: 1.2rem;
 }
 
 .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
@@ -237,7 +237,7 @@ h3 { font-size: 1.5rem; }
 /* ---------- Sections ---------- */
 
 section.block {
-  padding: 5.5rem 0;
+  padding: 3.5rem 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -246,7 +246,7 @@ section.block {
   justify-content: space-between;
   align-items: flex-end;
   gap: 1rem;
-  margin-bottom: 2.8rem;
+  margin-bottom: 1.8rem;
 }
 
 .section-head p {
@@ -382,7 +382,7 @@ section.block {
 /* ---------- Portfolio ---------- */
 
 .page-hero {
-  padding: 4rem 0 3rem;
+  padding: 2.5rem 0 2rem;
   border-bottom: 1px solid var(--border);
 }
 
@@ -531,7 +531,7 @@ body, a, button, audio, input, label, select { cursor: none !important; }
 
 .solar-block {
   border-bottom: 1px solid var(--border);
-  padding-top: 5.5rem;
+  padding-top: 3.5rem;
 }
 
 .solar-section {
