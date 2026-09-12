@@ -13,6 +13,7 @@
   label { display: block; font-size: .85rem; color: #94a3b8; margin-bottom: .4rem; margin-top: 1rem; }
   label:first-of-type { margin-top: 0; }
   input, select { width: 100%; padding: .7rem 1rem; background: #0f1117; border: 1px solid #2d3548; border-radius: 8px; color: #e2e8f0; font-size: 1rem; }
+  input[type="file"] { padding: .5rem; }
   input:focus, select:focus { outline: none; border-color: #6366f1; }
   .btn { display: inline-block; padding: .75rem 1.5rem; border-radius: 8px; border: none; font-size: 1rem; cursor: pointer; margin-top: 1rem; }
   .btn-primary { background: #6366f1; color: white; width: 100%; }
@@ -23,6 +24,7 @@
   .song-item-info { flex: 1; }
   .song-title { font-weight: 600; margin-bottom: .2rem; }
   .song-meta { font-size: .8rem; color: #64748b; }
+  .song-audio { font-size: .75rem; margin-top: .25rem; }
   .stage-badge { display: inline-block; font-size: .75rem; padding: .2rem .6rem; border-radius: 999px; margin-right: .4rem; }
   .stage-idea { background: #374151; color: #9ca3af; }
   .stage-demo { background: #1e3a5f; color: #60a5fa; }
@@ -65,6 +67,8 @@
       <input type="number" id="new-progress" min="0" max="100" value="0">
     </div>
   </div>
+  <label>Audio file (optional)</label>
+  <input type="file" id="new-audio" accept="audio/*">
   <button class="btn btn-primary" onclick="addSong()">Add song</button>
 </div>
 
@@ -83,6 +87,16 @@ function msg(text, type) {
   setTimeout(() => el.className = '', 3000);
 }
 
+async function uploadAudio(fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return null;
+  const fd = new FormData();
+  fd.append('file', file);
+  const r = await fetch(API + '/upload', { method: 'POST', body: fd });
+  const data = await r.json();
+  return data.url;
+}
+
 async function loadSongs() {
   const res = await fetch(API + '/songs');
   const songs = await res.json();
@@ -95,6 +109,9 @@ async function loadSongs() {
         <div class="song-meta">
           <span class="stage-badge stage-${s.stage}">${s.stage}</span>
           ${s.progress}%
+        </div>
+        <div class="song-audio">
+          ${s.audio_url ? `<span style="color:#2dd4bf">🎵 ${s.audio_url.split('/').pop()}</span>` : '<span style="color:#4b5563">No audio</span>'}
         </div>
         <div class="edit-form" id="edit-${s.id}">
           <label>Title</label>
@@ -113,6 +130,8 @@ async function loadSongs() {
               <input type="number" id="ep-${s.id}" min="0" max="100" value="${s.progress}">
             </div>
           </div>
+          <label>Replace audio</label>
+          <input type="file" id="ea-${s.id}" accept="audio/*">
           <div class="row" style="margin-top:.75rem">
             <button class="btn btn-primary" style="margin-top:0" onclick="updateSong(${s.id})">Save</button>
             <button class="btn btn-danger" onclick="deleteSong(${s.id})">Delete</button>
@@ -133,9 +152,11 @@ async function addSong() {
   const stage = document.getElementById('new-stage').value;
   const progress = parseInt(document.getElementById('new-progress').value);
   if (!title) { msg('Title is required', 'error'); return; }
-  await fetch(API + '/songs', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({title, stage, progress}) });
+  const audio_url = await uploadAudio(document.getElementById('new-audio'));
+  await fetch(API + '/songs', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({title, stage, progress, audio_url}) });
   document.getElementById('new-title').value = '';
   document.getElementById('new-progress').value = '0';
+  document.getElementById('new-audio').value = '';
   msg('Song added!', 'success');
   loadSongs();
 }
@@ -144,7 +165,10 @@ async function updateSong(id) {
   const title = document.getElementById('et-' + id).value.trim();
   const stage = document.getElementById('es-' + id).value;
   const progress = parseInt(document.getElementById('ep-' + id).value);
-  await fetch(API + '/songs/' + id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({title, stage, progress}) });
+  const audio_url = await uploadAudio(document.getElementById('ea-' + id));
+  const body = { title, stage, progress };
+  if (audio_url) body.audio_url = audio_url;
+  await fetch(API + '/songs/' + id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
   msg('Saved!', 'success');
   loadSongs();
 }

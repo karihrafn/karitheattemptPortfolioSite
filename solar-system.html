@@ -143,6 +143,8 @@ const cy = canvas.height / 2;
 let planets = [];
 let mouse = { x: -999, y: -999 };
 let lastTime = 0;
+let currentAudio = null;
+let playingPlanet = null;
 
 function planetRadius(progress) {
   return 6 + (progress / 100) * 14;
@@ -187,6 +189,21 @@ function drawPlanets(t) {
     p._x = x;
     p._y = y;
 
+    // Playing ring
+    if (p === playingPlanet) {
+      const pulse = 0.5 + 0.5 * Math.sin(t * 0.003);
+      ctx.save();
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.4 + 0.4 * pulse;
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = p.color;
+      ctx.beginPath();
+      ctx.arc(x, y, p.radius + 5 + 3 * pulse, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
     ctx.save();
     ctx.shadowBlur = 18;
     ctx.shadowColor = p.color;
@@ -220,6 +237,7 @@ function checkHover() {
       <span class="tooltip-stage" style="background:${hit.color}22;color:${hit.color}">${STAGES[hit.stage].label}</span>
       <div class="tooltip-bar-bg"><div class="tooltip-bar-fill" style="width:${hit.progress}%;background:${hit.color}"></div></div>
       <div class="tooltip-progress">${hit.progress}%</div>
+      ${hit === playingPlanet ? `<div class="tooltip-progress" style="color:#2dd4bf;margin-top:.4rem">◼ Playing — click to stop</div>` : (hit.audio_url ? `<div class="tooltip-progress" style="color:#60a5fa;margin-top:.4rem">▶ Click to play</div>` : '')}
     `;
     const pad = 8;
     const tw = tooltip.offsetWidth;
@@ -282,6 +300,7 @@ async function init() {
       title: s.title,
       stage: s.stage,
       progress: s.progress,
+      audio_url: s.audio_url || null,
       radius: planetRadius(s.progress),
       angle: (i / total) * Math.PI * 2,
       _x: 0, _y: 0,
@@ -303,6 +322,29 @@ canvas.addEventListener('mousemove', onMove);
 canvas.addEventListener('mouseleave', () => {
   tooltip.style.display = 'none';
   if (hovered) { hovered._paused = false; hovered = null; }
+});
+
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect();
+  const lx = (e.clientX - rect.left) * (canvas.width / rect.width);
+  const ly = (e.clientY - rect.top) * (canvas.height / rect.height);
+  const hit = planets.find(p => p._x !== undefined && Math.sqrt((p._x - lx) ** 2 + (p._y - ly) ** 2) < p.radius + 16);
+  if (!hit) return;
+
+  if (hit === playingPlanet) {
+    currentAudio.paused ? currentAudio.play() : currentAudio.pause();
+    playingPlanet = currentAudio.paused ? null : hit;
+    return;
+  }
+
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  playingPlanet = null;
+  if (!hit.audio_url) return;
+
+  currentAudio = new Audio(hit.audio_url);
+  currentAudio.play();
+  playingPlanet = hit;
+  currentAudio.addEventListener('ended', () => { playingPlanet = null; currentAudio = null; });
 });
 
 init();
