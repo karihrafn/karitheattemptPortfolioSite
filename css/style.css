@@ -309,10 +309,8 @@ section.block {
 .track-links a:hover { color: var(--pink); }
 
 @media (max-width: 620px) {
-  .track { grid-template-columns: auto 1fr; padding: 1rem; gap: 1rem; }
-  .track-links { grid-column: 1 / -1; }
+  .track { grid-template-columns: 1fr; padding: 1rem; gap: 1rem; }
   .track-info h3 { font-size: 1.1rem; overflow-wrap: break-word; word-break: break-word; }
-  .track-num { font-size: 1.2rem; }
 }
 
 /* ---------- Gallery ---------- */
