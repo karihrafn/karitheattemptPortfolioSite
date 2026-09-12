@@ -265,7 +265,7 @@ section.block {
 
 .track {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr;
   gap: 1.4rem;
   align-items: center;
   background: var(--surface);
