@@ -241,11 +241,18 @@ canvas.addEventListener('click', e => {
   playingPlanet = null;
   if (!hit.audio_url) return;
 
+  document.querySelectorAll('audio').forEach(a => a.pause());
+
   const audio = new Audio(hit.audio_url);
   currentAudio = audio;
   playingPlanet = hit;
   audio.addEventListener('ended', () => { if (currentAudio === audio) { playingPlanet = null; currentAudio = null; } });
   doFadeIn(audio, 800);
 });
+
+window._stopPlanetAudio = () => {
+  if (currentAudio) { doFadeOut(currentAudio, 300); currentAudio = null; }
+  playingPlanet = null;
+};
 
 init();

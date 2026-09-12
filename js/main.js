@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const indicator = audio.closest('.track-info').querySelector('.now-playing');
 
     audio.addEventListener('play', () => {
+      if (window._stopPlanetAudio) window._stopPlanetAudio();
       allAudio.forEach(other => {
         if (other !== audio) {
           other.pause();
