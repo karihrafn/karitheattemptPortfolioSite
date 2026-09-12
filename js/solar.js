@@ -163,7 +163,7 @@ function frame(t) {
   drawStar(t);
 
   planets.forEach(p => {
-    if (!p._paused) p.angle += p.speed * (dt / 1000);
+    if (!p._paused && !p._playing) p.angle += p.speed * (dt / 1000);
   });
 
   drawPlanets(t);
@@ -227,14 +227,16 @@ canvas.addEventListener('mouseleave', () => {
 
 let lastTouchEnd = 0;
 
-function handleTap(clientX, clientY) {
+function handleTap(clientX, clientY, isTouch = false) {
   const rect = canvas.getBoundingClientRect();
   const lx = (clientX - rect.left) * (canvas.width / rect.width);
   const ly = (clientY - rect.top) * (canvas.height / rect.height);
-  const hit = planets.find(p => p._x !== undefined && Math.sqrt((p._x - lx) ** 2 + (p._y - ly) ** 2) < p.radius + 16);
+  const hitPad = isTouch ? 30 : 16;
+  const hit = planets.find(p => p._x !== undefined && Math.sqrt((p._x - lx) ** 2 + (p._y - ly) ** 2) < p.radius + hitPad);
   if (!hit) return;
 
   if (hit.audio_url && hit.audio_url === currentUrl) {
+    hit._playing = false;
     const a = currentAudio;
     currentAudio = null;
     currentUrl = null;
@@ -243,7 +245,12 @@ function handleTap(clientX, clientY) {
     return;
   }
 
-  if (currentAudio) { const prev = currentAudio; currentAudio = null; doFadeOut(prev, 300); }
+  if (currentAudio) {
+    if (playingPlanet) playingPlanet._playing = false;
+    const prev = currentAudio;
+    currentAudio = null;
+    doFadeOut(prev, 300);
+  }
   currentUrl = null;
   playingPlanet = null;
   if (!hit.audio_url) return;
@@ -254,15 +261,19 @@ function handleTap(clientX, clientY) {
   currentAudio = audio;
   currentUrl = hit.audio_url;
   playingPlanet = hit;
+  hit._playing = true;
   audio.addEventListener('ended', () => {
-    if (currentAudio === audio) { playingPlanet = null; currentAudio = null; currentUrl = null; }
+    if (currentAudio === audio) {
+      if (playingPlanet) playingPlanet._playing = false;
+      playingPlanet = null; currentAudio = null; currentUrl = null;
+    }
   });
   doFadeIn(audio, 800);
 }
 
 canvas.addEventListener('touchend', e => {
   if (e.changedTouches.length !== 1) return;
-  handleTap(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+  handleTap(e.changedTouches[0].clientX, e.changedTouches[0].clientY, true);
   lastTouchEnd = Date.now();
 });
 
@@ -272,6 +283,7 @@ canvas.addEventListener('click', e => {
 });
 
 window._stopPlanetAudio = () => {
+  if (playingPlanet) playingPlanet._playing = false;
   if (currentAudio) { currentAudio.pause(); currentAudio = null; }
   currentUrl = null;
   playingPlanet = null;
