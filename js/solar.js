@@ -226,8 +226,12 @@ canvas.addEventListener('mouseleave', () => {
 });
 
 let lastTouchEnd = 0;
+let lastTapHandled = 0;
 
 function handleTap(clientX, clientY, isTouch = false) {
+  const now = Date.now();
+  if (now - lastTapHandled < 300) return;
+  lastTapHandled = now;
   const rect = canvas.getBoundingClientRect();
   const lx = (clientX - rect.left) * (canvas.width / rect.width);
   const ly = (clientY - rect.top) * (canvas.height / rect.height);
