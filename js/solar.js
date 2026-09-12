@@ -39,6 +39,7 @@ function doFadeIn(audio, ms = 800) {
 }
 
 function doFadeOut(audio, ms = 500, done) {
+  if (fadeInTimer) { clearInterval(fadeInTimer); fadeInTimer = null; }
   if (fadeOutTimer) { clearInterval(fadeOutTimer); fadeOutTimer = null; }
   const step = 40;
   fadeOutTimer = setInterval(() => {
@@ -230,23 +231,22 @@ canvas.addEventListener('click', e => {
   const hit = planets.find(p => p._x !== undefined && Math.sqrt((p._x - lx) ** 2 + (p._y - ly) ** 2) < p.radius + 16);
   if (!hit) return;
 
-  if (hit === playingPlanet) {
+  if (hit === playingPlanet || (currentAudio && currentAudio._src === hit.audio_url)) {
     const a = currentAudio;
-    const p = playingPlanet;
-    doFadeOut(a, 500, () => {
-      if (currentAudio === a) currentAudio = null;
-      if (playingPlanet === p) playingPlanet = null;
-    });
+    currentAudio = null;
+    playingPlanet = null;
+    if (a) doFadeOut(a, 500);
     return;
   }
 
-  if (currentAudio) { doFadeOut(currentAudio, 300); currentAudio = null; }
+  if (currentAudio) { const prev = currentAudio; currentAudio = null; doFadeOut(prev, 300); }
   playingPlanet = null;
   if (!hit.audio_url) return;
 
   document.querySelectorAll('audio').forEach(a => a.pause());
 
   const audio = new Audio(hit.audio_url);
+  audio._src = hit.audio_url;
   currentAudio = audio;
   playingPlanet = hit;
   audio.addEventListener('ended', () => { if (currentAudio === audio) { playingPlanet = null; currentAudio = null; } });
