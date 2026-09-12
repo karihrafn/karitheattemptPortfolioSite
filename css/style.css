@@ -480,6 +480,9 @@ body, a, button, audio, input, label, select { cursor: none !important; }
   border-color: var(--pink);
 }
 
+.cursor.on-dark { border-color: white; }
+.cursor.on-dark.hover { border-color: white; }
+
 @media (hover: none) {
   body { cursor: auto; }
   .cursor { display: none; }

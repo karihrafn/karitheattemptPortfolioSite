@@ -24,6 +24,12 @@ document.addEventListener('DOMContentLoaded', () => {
     cursor.style.top = e.clientY + 'px';
   });
 
+  const solarSection = document.querySelector('.solar-section');
+  if (solarSection) {
+    solarSection.addEventListener('mouseenter', () => cursor.classList.add('on-dark'));
+    solarSection.addEventListener('mouseleave', () => cursor.classList.remove('on-dark'));
+  }
+
   document.querySelectorAll('a, button, audio').forEach(el => {
     el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
     el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
