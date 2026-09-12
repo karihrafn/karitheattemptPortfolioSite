@@ -232,8 +232,11 @@ canvas.addEventListener('click', e => {
 
   if (hit === playingPlanet) {
     const a = currentAudio;
-    doFadeOut(a, 500, () => { if (currentAudio === a) currentAudio = null; });
-    playingPlanet = null;
+    const p = playingPlanet;
+    doFadeOut(a, 500, () => {
+      if (currentAudio === a) currentAudio = null;
+      if (playingPlanet === p) playingPlanet = null;
+    });
     return;
   }
 
