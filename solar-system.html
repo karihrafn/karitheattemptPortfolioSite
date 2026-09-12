@@ -145,6 +145,32 @@ let mouse = { x: -999, y: -999 };
 let lastTime = 0;
 let currentAudio = null;
 let playingPlanet = null;
+let fadeInTimer = null;
+let fadeOutTimer = null;
+
+function doFadeIn(audio, ms = 800) {
+  if (fadeInTimer) { clearInterval(fadeInTimer); fadeInTimer = null; }
+  audio.volume = 0;
+  audio.play();
+  const step = 40;
+  fadeInTimer = setInterval(() => {
+    audio.volume = Math.min(1, audio.volume + step / ms);
+    if (audio.volume >= 1) { clearInterval(fadeInTimer); fadeInTimer = null; }
+  }, step);
+}
+
+function doFadeOut(audio, ms = 500, done) {
+  if (fadeOutTimer) { clearInterval(fadeOutTimer); fadeOutTimer = null; }
+  const step = 40;
+  fadeOutTimer = setInterval(() => {
+    audio.volume = Math.max(0, audio.volume - step / ms);
+    if (audio.volume <= 0) {
+      clearInterval(fadeOutTimer); fadeOutTimer = null;
+      audio.pause();
+      if (done) done();
+    }
+  }, step);
+}
 
 function planetRadius(progress) {
   return 6 + (progress / 100) * 14;
@@ -332,19 +358,21 @@ canvas.addEventListener('click', e => {
   if (!hit) return;
 
   if (hit === playingPlanet) {
-    currentAudio.paused ? currentAudio.play() : currentAudio.pause();
-    playingPlanet = currentAudio.paused ? null : hit;
+    const a = currentAudio;
+    doFadeOut(a, 500, () => { if (currentAudio === a) currentAudio = null; });
+    playingPlanet = null;
     return;
   }
 
-  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  if (currentAudio) { doFadeOut(currentAudio, 300); currentAudio = null; }
   playingPlanet = null;
   if (!hit.audio_url) return;
 
-  currentAudio = new Audio(hit.audio_url);
-  currentAudio.play();
+  const audio = new Audio(hit.audio_url);
+  currentAudio = audio;
   playingPlanet = hit;
-  currentAudio.addEventListener('ended', () => { playingPlanet = null; currentAudio = null; });
+  audio.addEventListener('ended', () => { if (currentAudio === audio) { playingPlanet = null; currentAudio = null; } });
+  doFadeIn(audio, 800);
 });
 
 init();
