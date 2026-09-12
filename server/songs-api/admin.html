@@ -148,29 +148,39 @@ function toggleEdit(id) {
 }
 
 async function addSong() {
-  const title = document.getElementById('new-title').value.trim();
-  const stage = document.getElementById('new-stage').value;
-  const progress = parseInt(document.getElementById('new-progress').value);
-  if (!title) { msg('Title is required', 'error'); return; }
-  const audio_url = await uploadAudio(document.getElementById('new-audio'));
-  await fetch(API + '/songs', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({title, stage, progress, audio_url}) });
-  document.getElementById('new-title').value = '';
-  document.getElementById('new-progress').value = '0';
-  document.getElementById('new-audio').value = '';
-  msg('Song added!', 'success');
-  loadSongs();
+  try {
+    const title = document.getElementById('new-title').value.trim();
+    const stage = document.getElementById('new-stage').value;
+    const progress = parseInt(document.getElementById('new-progress').value);
+    if (!title) { msg('Title is required', 'error'); return; }
+    const audioEl = document.getElementById('new-audio');
+    const audio_url = audioEl ? await uploadAudio(audioEl) : null;
+    await fetch(API + '/songs', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({title, stage, progress, audio_url}) });
+    document.getElementById('new-title').value = '';
+    document.getElementById('new-progress').value = '0';
+    if (audioEl) audioEl.value = '';
+    msg('Song added!', 'success');
+    loadSongs();
+  } catch (e) {
+    msg('Error: ' + e.message, 'error');
+  }
 }
 
 async function updateSong(id) {
-  const title = document.getElementById('et-' + id).value.trim();
-  const stage = document.getElementById('es-' + id).value;
-  const progress = parseInt(document.getElementById('ep-' + id).value);
-  const audio_url = await uploadAudio(document.getElementById('ea-' + id));
-  const body = { title, stage, progress };
-  if (audio_url) body.audio_url = audio_url;
-  await fetch(API + '/songs/' + id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
-  msg('Saved!', 'success');
-  loadSongs();
+  try {
+    const title = document.getElementById('et-' + id).value.trim();
+    const stage = document.getElementById('es-' + id).value;
+    const progress = parseInt(document.getElementById('ep-' + id).value);
+    const audioEl = document.getElementById('ea-' + id);
+    const audio_url = audioEl ? await uploadAudio(audioEl) : null;
+    const body = { title, stage, progress };
+    if (audio_url) body.audio_url = audio_url;
+    await fetch(API + '/songs/' + id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    msg('Saved!', 'success');
+    loadSongs();
+  } catch (e) {
+    msg('Error: ' + e.message, 'error');
+  }
 }
 
 async function deleteSong(id) {
