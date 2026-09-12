@@ -534,7 +534,7 @@ body, a, button, audio, input, label, select { cursor: none !important; }
 
 .solar-block {
   border-bottom: 1px solid var(--border);
-  padding-top: 3.5rem;
+  padding-top: 2rem;
 }
 
 .solar-section {
