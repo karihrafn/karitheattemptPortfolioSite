@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Kári the Attempt</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; padding: 2rem 1rem; }
+  h1 { font-size: 1.5rem; margin-bottom: 2rem; color: #f8fafc; }
+  h2 { font-size: 1.1rem; margin-bottom: 1rem; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; }
+  .card { background: #1e2330; border: 1px solid #2d3548; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+  label { display: block; font-size: .85rem; color: #94a3b8; margin-bottom: .4rem; margin-top: 1rem; }
+  label:first-of-type { margin-top: 0; }
+  input, select { width: 100%; padding: .7rem 1rem; background: #0f1117; border: 1px solid #2d3548; border-radius: 8px; color: #e2e8f0; font-size: 1rem; }
+  input:focus, select:focus { outline: none; border-color: #6366f1; }
+  .btn { display: inline-block; padding: .75rem 1.5rem; border-radius: 8px; border: none; font-size: 1rem; cursor: pointer; margin-top: 1rem; }
+  .btn-primary { background: #6366f1; color: white; width: 100%; }
+  .btn-danger { background: #ef4444; color: white; padding: .5rem 1rem; font-size: .85rem; margin-top: 0; }
+  .btn:active { opacity: .8; }
+  .song-list { display: flex; flex-direction: column; gap: .75rem; }
+  .song-item { background: #0f1117; border: 1px solid #2d3548; border-radius: 8px; padding: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+  .song-item-info { flex: 1; }
+  .song-title { font-weight: 600; margin-bottom: .2rem; }
+  .song-meta { font-size: .8rem; color: #64748b; }
+  .stage-badge { display: inline-block; font-size: .75rem; padding: .2rem .6rem; border-radius: 999px; margin-right: .4rem; }
+  .stage-idea { background: #374151; color: #9ca3af; }
+  .stage-demo { background: #1e3a5f; color: #60a5fa; }
+  .stage-tracked { background: #134e4a; color: #2dd4bf; }
+  .stage-mixed { background: #3b0764; color: #c084fc; }
+  .stage-mastered { background: #431407; color: #fb923c; }
+  .stage-released { background: #422006; color: #fbbf24; }
+  .edit-form { display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #2d3548; }
+  .edit-form.open { display: block; }
+  .row { display: flex; gap: .75rem; }
+  .row > * { flex: 1; }
+  #message { padding: .75rem 1rem; border-radius: 8px; margin-bottom: 1rem; display: none; }
+  #message.success { background: #134e4a; color: #2dd4bf; display: block; }
+  #message.error { background: #450a0a; color: #fca5a5; display: block; }
+</style>
+</head>
+<body>
+<h1>Kári the Attempt — Admin</h1>
+
+<div id="message"></div>
+
+<div class="card">
+  <h2>Add song</h2>
+  <label>Title</label>
+  <input type="text" id="new-title" placeholder="Song title">
+  <div class="row">
+    <div>
+      <label>Stage</label>
+      <select id="new-stage">
+        <option value="idea">Idea</option>
+        <option value="demo">Demo</option>
+        <option value="tracked">Tracked</option>
+        <option value="mixed">Mixed</option>
+        <option value="mastered">Mastered</option>
+        <option value="released">Released</option>
+      </select>
+    </div>
+    <div>
+      <label>Progress (0–100)</label>
+      <input type="number" id="new-progress" min="0" max="100" value="0">
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="addSong()">Add song</button>
+</div>
+
+<div class="card">
+  <h2>Songs</h2>
+  <div class="song-list" id="song-list">Loading...</div>
+</div>
+
+<script>
+const API = 'https://api.karitheattempt.com';
+
+function msg(text, type) {
+  const el = document.getElementById('message');
+  el.textContent = text;
+  el.className = type;
+  setTimeout(() => el.className = '', 3000);
+}
+
+async function loadSongs() {
+  const res = await fetch(API + '/songs');
+  const songs = await res.json();
+  const list = document.getElementById('song-list');
+  if (!songs.length) { list.innerHTML = '<p style="color:#64748b">No songs yet.</p>'; return; }
+  list.innerHTML = songs.map(s => `
+    <div class="song-item" id="song-${s.id}">
+      <div class="song-item-info">
+        <div class="song-title">${s.title}</div>
+        <div class="song-meta">
+          <span class="stage-badge stage-${s.stage}">${s.stage}</span>
+          ${s.progress}%
+        </div>
+        <div class="edit-form" id="edit-${s.id}">
+          <label>Title</label>
+          <input type="text" id="et-${s.id}" value="${s.title}">
+          <div class="row">
+            <div>
+              <label>Stage</label>
+              <select id="es-${s.id}">
+                ${['idea','demo','tracked','mixed','mastered','released'].map(st =>
+                  `<option value="${st}" ${s.stage===st?'selected':''}>${st}</option>`
+                ).join('')}
+              </select>
+            </div>
+            <div>
+              <label>Progress</label>
+              <input type="number" id="ep-${s.id}" min="0" max="100" value="${s.progress}">
+            </div>
+          </div>
+          <div class="row" style="margin-top:.75rem">
+            <button class="btn btn-primary" style="margin-top:0" onclick="updateSong(${s.id})">Save</button>
+            <button class="btn btn-danger" onclick="deleteSong(${s.id})">Delete</button>
+          </div>
+        </div>
+      </div>
+      <button class="btn" style="background:#2d3548;color:#e2e8f0;margin-top:0;padding:.5rem 1rem;font-size:.85rem" onclick="toggleEdit(${s.id})">Edit</button>
+    </div>
+  `).join('');
+}
+
+function toggleEdit(id) {
+  document.getElementById('edit-' + id).classList.toggle('open');
+}
+
+async function addSong() {
+  const title = document.getElementById('new-title').value.trim();
+  const stage = document.getElementById('new-stage').value;
+  const progress = parseInt(document.getElementById('new-progress').value);
+  if (!title) { msg('Title is required', 'error'); return; }
+  await fetch(API + '/songs', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({title, stage, progress}) });
+  document.getElementById('new-title').value = '';
+  document.getElementById('new-progress').value = '0';
+  msg('Song added!', 'success');
+  loadSongs();
+}
+
+async function updateSong(id) {
+  const title = document.getElementById('et-' + id).value.trim();
+  const stage = document.getElementById('es-' + id).value;
+  const progress = parseInt(document.getElementById('ep-' + id).value);
+  await fetch(API + '/songs/' + id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({title, stage, progress}) });
+  msg('Saved!', 'success');
+  loadSongs();
+}
+
+async function deleteSong(id) {
+  if (!confirm('Delete this song?')) return;
+  await fetch(API + '/songs/' + id, { method: 'DELETE' });
+  msg('Deleted.', 'success');
+  loadSongs();
+}
+
+loadSongs();
+</script>
+</body>
+</html>

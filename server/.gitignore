@@ -1,0 +1,4 @@
+nginx/.htpasswd
+songs-api/data/
+node_modules/
+.env
