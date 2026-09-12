@@ -225,10 +225,12 @@ canvas.addEventListener('mouseleave', () => {
   if (hovered) { hovered._paused = false; hovered = null; }
 });
 
-canvas.addEventListener('click', e => {
+let lastTouchEnd = 0;
+
+function handleTap(clientX, clientY) {
   const rect = canvas.getBoundingClientRect();
-  const lx = (e.clientX - rect.left) * (canvas.width / rect.width);
-  const ly = (e.clientY - rect.top) * (canvas.height / rect.height);
+  const lx = (clientX - rect.left) * (canvas.width / rect.width);
+  const ly = (clientY - rect.top) * (canvas.height / rect.height);
   const hit = planets.find(p => p._x !== undefined && Math.sqrt((p._x - lx) ** 2 + (p._y - ly) ** 2) < p.radius + 16);
   if (!hit) return;
 
@@ -256,6 +258,17 @@ canvas.addEventListener('click', e => {
     if (currentAudio === audio) { playingPlanet = null; currentAudio = null; currentUrl = null; }
   });
   doFadeIn(audio, 800);
+}
+
+canvas.addEventListener('touchend', e => {
+  if (e.changedTouches.length !== 1) return;
+  handleTap(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+  lastTouchEnd = Date.now();
+});
+
+canvas.addEventListener('click', e => {
+  if (Date.now() - lastTouchEnd < 500) return; // skip synthetic click after touch
+  handleTap(e.clientX, e.clientY);
 });
 
 window._stopPlanetAudio = () => {
