@@ -20,7 +20,7 @@
       <a href="index.html#music" class="active">Music</a>
       <a href="index.html#gallery">Photos</a>
       <a href="portfolio.html">Portfolio</a>
-      <a href="solar-system.html">Album</a>
+      <a href="#album">Album</a>
       <a href="index.html#contact">Contact</a>
     </nav>
     <button class="nav-toggle" aria-label="Toggle menu">☰</button>
@@ -43,6 +43,24 @@
     <div class="hero-portrait">
       <img src="assets/images/portrait.JPG" alt="Portrait of Kári the Attempt">
     </div>
+  </div>
+</section>
+
+<section class="solar-block" id="album">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">In progress</p>
+        <h2>Next album</h2>
+        <p>Each planet is a song. Size reflects how far along it is. Color reflects its stage.</p>
+      </div>
+      <a href="solar-system.html" class="btn btn-outline" style="flex-shrink:0">Full page ↗</a>
+    </div>
+  </div>
+  <div class="solar-section">
+    <canvas id="solar" width="700" height="700"></canvas>
+    <div id="tooltip" class="tooltip"></div>
+    <div class="legend" id="legend"></div>
   </div>
 </section>
 
@@ -148,5 +166,6 @@
 </footer>
 
 <script src="js/main.js"></script>
+<script src="js/solar.js"></script>
 </body>
 </html>

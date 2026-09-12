@@ -527,6 +527,83 @@ body, a, button, audio, input, label, select { cursor: none !important; }
   to   { transform: scaleY(1); }
 }
 
+/* ---------- Album / Solar ---------- */
+
+.solar-block {
+  border-bottom: 1px solid var(--border);
+  padding-top: 5.5rem;
+}
+
+.solar-section {
+  background: #07090f;
+  padding: 3rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.solar-section canvas {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+}
+
+.tooltip {
+  position: fixed;
+  background: rgba(7,9,15,.92);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  padding: .65rem 1rem;
+  pointer-events: none;
+  font-family: var(--font-body);
+  font-size: .9rem;
+  color: #e2e8f0;
+  display: none;
+  z-index: 9999;
+  max-width: 200px;
+}
+
+.tooltip-title { font-weight: 600; margin-bottom: .3rem; font-size: .95rem; }
+.tooltip-stage {
+  display: inline-block;
+  font-size: .75rem;
+  padding: .15rem .55rem;
+  border-radius: 999px;
+  margin-bottom: .4rem;
+}
+.tooltip-bar-bg { background: rgba(255,255,255,.1); border-radius: 4px; height: 4px; overflow: hidden; }
+.tooltip-bar-fill { height: 100%; border-radius: 4px; }
+.tooltip-progress { font-size: .78rem; color: #94a3b8; margin-top: .3rem; }
+
+@media (max-width: 520px) {
+  .tooltip { padding: .45rem .7rem; font-size: .8rem; max-width: 160px; }
+  .tooltip-title { font-size: .85rem; }
+  .tooltip-stage { font-size: .7rem; }
+  .tooltip-progress { font-size: .72rem; }
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem 1.4rem;
+  justify-content: center;
+  padding: 1.5rem 1rem .5rem;
+  background: #07090f;
+  font-family: var(--font-body);
+  font-size: .82rem;
+  color: #94a3b8;
+}
+
+.legend-item { display: flex; align-items: center; gap: .45rem; }
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+.empty-state {
+  text-align: center;
+  color: #4b5563;
+  font-family: var(--font-body);
+  padding: 4rem 1rem;
+  font-size: 1rem;
+}
+
 /* ---------- Footer ---------- */
 
 footer.site-footer {
