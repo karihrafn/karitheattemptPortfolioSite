@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Next Album — Kári the Attempt</title>
+<meta name="description" content="Album progress tracker — Kári the Attempt.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="assets/images/ep-cover.jpg" type="image/jpeg">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .page-hero { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+  .page-hero h1 { margin-bottom: .2rem; }
+  .page-hero p { margin: 0; font-size: 1rem; }
+
+  .solar-section {
+    background: #07090f;
+    padding: 3rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .solar-section canvas {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+  }
+  .tooltip {
+    position: fixed;
+    background: rgba(7,9,15,.92);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 10px;
+    padding: .65rem 1rem;
+    pointer-events: none;
+    font-family: var(--font-body);
+    font-size: .9rem;
+    color: #e2e8f0;
+    display: none;
+    z-index: 9999;
+    max-width: 200px;
+  }
+  .tooltip-title { font-weight: 600; margin-bottom: .3rem; font-size: .95rem; }
+  .tooltip-stage {
+    display: inline-block;
+    font-size: .75rem;
+    padding: .15rem .55rem;
+    border-radius: 999px;
+    margin-bottom: .4rem;
+  }
+  .tooltip-bar-bg {
+    background: rgba(255,255,255,.1);
+    border-radius: 4px;
+    height: 4px;
+    overflow: hidden;
+  }
+  .tooltip-bar-fill { height: 100%; border-radius: 4px; }
+  .tooltip-progress { font-size: .78rem; color: #94a3b8; margin-top: .3rem; }
+
+  @media (max-width: 520px) {
+    .tooltip { padding: .45rem .7rem; font-size: .8rem; max-width: 160px; }
+    .tooltip-title { font-size: .85rem; }
+    .tooltip-stage { font-size: .7rem; }
+    .tooltip-progress { font-size: .72rem; }
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem 1.4rem;
+    justify-content: center;
+    padding: 1.5rem 1rem .5rem;
+    background: #07090f;
+    font-family: var(--font-body);
+    font-size: .82rem;
+    color: #94a3b8;
+  }
+  .legend-item { display: flex; align-items: center; gap: .45rem; }
+  .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .empty-state {
+    text-align: center;
+    color: #4b5563;
+    font-family: var(--font-body);
+    padding: 4rem 1rem;
+    font-size: 1rem;
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="logo">KÁRI <span>THE ATTEMPT</span></a>
+    <nav class="nav-links">
+      <a href="index.html#music">Music</a>
+      <a href="index.html#gallery">Photos</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="solar-system.html" class="active">Album</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+    <button class="nav-toggle" aria-label="Toggle menu">☰</button>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <h1>Next album</h1>
+    <p>Each planet is a song. Size reflects how far along it is. Color reflects its stage.</p>
+  </div>
+</section>
+
+<div class="solar-section">
+  <canvas id="solar" width="700" height="700"></canvas>
+  <div id="tooltip" class="tooltip"></div>
+  <div class="legend" id="legend"></div>
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>© <span id="year"></span> Kári the Attempt</span>
+    <span><a href="index.html">← Back home</a></span>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script>
+const API = 'https://api.karitheattempt.com/songs';
+
+const STAGES = {
+  idea:     { color: '#9ca3af', orbit: 70,  speed: 0.28, label: 'Idea' },
+  demo:     { color: '#60a5fa', orbit: 130, speed: 0.20, label: 'Demo' },
+  tracked:  { color: '#2dd4bf', orbit: 190, speed: 0.14, label: 'Tracked' },
+  mixed:    { color: '#c084fc', orbit: 250, speed: 0.10, label: 'Mixed' },
+  mastered: { color: '#fb923c', orbit: 310, speed: 0.07, label: 'Mastered' },
+  released: { color: '#fbbf24', orbit: 360, speed: 0.05, label: 'Released' },
+};
+
+const canvas = document.getElementById('solar');
+const ctx = canvas.getContext('2d');
+const tooltip = document.getElementById('tooltip');
+const cx = canvas.width / 2;
+const cy = canvas.height / 2;
+
+let planets = [];
+let mouse = { x: -999, y: -999 };
+let lastTime = 0;
+
+function planetRadius(progress) {
+  return 6 + (progress / 100) * 14;
+}
+
+function drawStar(t) {
+  const pulse = 1 + 0.06 * Math.sin(t * 0.002);
+  ctx.save();
+  ctx.shadowBlur = 40 * pulse;
+  ctx.shadowColor = '#fef3c7';
+  ctx.fillStyle = '#fef9ee';
+  ctx.beginPath();
+  ctx.arc(cx, cy, 12 * pulse, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 80 * pulse;
+  ctx.shadowColor = '#fde68a';
+  ctx.fillStyle = '#fffbf0';
+  ctx.beginPath();
+  ctx.arc(cx, cy, 7 * pulse, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawOrbits() {
+  const seen = new Set(planets.map(p => p.orbit));
+  seen.forEach(r => {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 8]);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  });
+}
+
+function drawPlanets(t) {
+  planets.forEach(p => {
+    const x = cx + Math.cos(p.angle) * p.orbit;
+    const y = cy + Math.sin(p.angle) * p.orbit;
+    p._x = x;
+    p._y = y;
+
+    ctx.save();
+    ctx.shadowBlur = 18;
+    ctx.shadowColor = p.color;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(x, y, p.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+let hovered = null;
+
+function checkHover() {
+  const rect = canvas.getBoundingClientRect();
+  const lx = (mouse.x - rect.left) * (canvas.width / rect.width);
+  const ly = (mouse.y - rect.top) * (canvas.height / rect.height);
+
+  const hit = planets.find(p => p._x !== undefined && Math.sqrt((p._x-lx)**2 + (p._y-ly)**2) < p.radius + 16);
+
+  if (hit !== hovered) {
+    if (hovered) hovered._paused = false;
+    hovered = hit || null;
+    if (hovered) hovered._paused = true;
+  }
+
+  if (hit) {
+    tooltip.style.display = 'block';
+    tooltip.innerHTML = `
+      <div class="tooltip-title">${hit.title}</div>
+      <span class="tooltip-stage" style="background:${hit.color}22;color:${hit.color}">${STAGES[hit.stage].label}</span>
+      <div class="tooltip-bar-bg"><div class="tooltip-bar-fill" style="width:${hit.progress}%;background:${hit.color}"></div></div>
+      <div class="tooltip-progress">${hit.progress}%</div>
+    `;
+    const pad = 8;
+    const tw = tooltip.offsetWidth;
+    const th = tooltip.offsetHeight;
+    const left = Math.min(Math.max(mouse.x + 16, pad), window.innerWidth - tw - pad);
+    const top = Math.min(Math.max(mouse.y - 10, pad), window.innerHeight - th - pad);
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+  } else {
+    tooltip.style.display = 'none';
+  }
+}
+
+function frame(t) {
+  const dt = t - lastTime;
+  lastTime = t;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  drawOrbits();
+  drawStar(t);
+
+  planets.forEach(p => {
+    if (!p._paused) p.angle += p.speed * (dt / 1000);
+  });
+
+  drawPlanets(t);
+
+  requestAnimationFrame(frame);
+}
+
+function buildLegend() {
+  const legend = document.getElementById('legend');
+  legend.innerHTML = Object.entries(STAGES).map(([key, s]) =>
+    `<div class="legend-item"><div class="legend-dot" style="background:${s.color}"></div>${s.label}</div>`
+  ).join('');
+}
+
+async function init() {
+  const songs = await fetch(API).then(r => r.json());
+
+  if (!songs.length) {
+    canvas.insertAdjacentHTML('afterend', '<div class="empty-state">No songs added yet.</div>');
+    canvas.style.display = 'none';
+    return;
+  }
+
+  // spread songs in same stage evenly around their orbit
+  const counts = {};
+  const indices = {};
+  songs.forEach(s => { counts[s.stage] = (counts[s.stage] || 0) + 1; });
+  songs.forEach(s => { indices[s.stage] = (indices[s.stage] || 0); });
+
+  planets = songs.map(s => {
+    const stage = STAGES[s.stage] || STAGES.idea;
+    const i = indices[s.stage]++;
+    const total = counts[s.stage];
+    return {
+      ...stage,
+      title: s.title,
+      stage: s.stage,
+      progress: s.progress,
+      radius: planetRadius(s.progress),
+      angle: (i / total) * Math.PI * 2,
+      _x: 0, _y: 0,
+    };
+  });
+
+  buildLegend();
+  requestAnimationFrame(frame);
+}
+
+function onMove(e) {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  checkHover();
+}
+
+canvas.addEventListener('pointermove', onMove);
+canvas.addEventListener('mousemove', onMove);
+canvas.addEventListener('mouseleave', () => {
+  tooltip.style.display = 'none';
+  if (hovered) { hovered._paused = false; hovered = null; }
+});
+
+init();
+</script>
+</body>
+</html>
