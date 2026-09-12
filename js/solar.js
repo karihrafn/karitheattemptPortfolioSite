@@ -19,6 +19,7 @@ let planets = [];
 let mouse = { x: -999, y: -999 };
 let lastTime = 0;
 let currentAudio = null;
+let currentUrl = null;
 let playingPlanet = null;
 let fadeInTimer = null;
 let fadeOutTimer = null;
@@ -231,30 +232,35 @@ canvas.addEventListener('click', e => {
   const hit = planets.find(p => p._x !== undefined && Math.sqrt((p._x - lx) ** 2 + (p._y - ly) ** 2) < p.radius + 16);
   if (!hit) return;
 
-  if (hit === playingPlanet || (currentAudio && currentAudio._src === hit.audio_url)) {
+  if (hit.audio_url && hit.audio_url === currentUrl) {
     const a = currentAudio;
     currentAudio = null;
+    currentUrl = null;
     playingPlanet = null;
     if (a) doFadeOut(a, 500);
     return;
   }
 
   if (currentAudio) { const prev = currentAudio; currentAudio = null; doFadeOut(prev, 300); }
+  currentUrl = null;
   playingPlanet = null;
   if (!hit.audio_url) return;
 
   document.querySelectorAll('audio').forEach(a => a.pause());
 
   const audio = new Audio(hit.audio_url);
-  audio._src = hit.audio_url;
   currentAudio = audio;
+  currentUrl = hit.audio_url;
   playingPlanet = hit;
-  audio.addEventListener('ended', () => { if (currentAudio === audio) { playingPlanet = null; currentAudio = null; } });
+  audio.addEventListener('ended', () => {
+    if (currentAudio === audio) { playingPlanet = null; currentAudio = null; currentUrl = null; }
+  });
   doFadeIn(audio, 800);
 });
 
 window._stopPlanetAudio = () => {
-  if (currentAudio) { doFadeOut(currentAudio, 300); currentAudio = null; }
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  currentUrl = null;
   playingPlanet = null;
 };
 
