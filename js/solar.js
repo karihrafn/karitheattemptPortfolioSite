@@ -225,13 +225,7 @@ canvas.addEventListener('mouseleave', () => {
   if (hovered) { hovered._paused = false; hovered = null; }
 });
 
-let lastTouchEnd = 0;
-let lastTapHandled = 0;
-
 function handleTap(clientX, clientY, isTouch = false) {
-  const now = Date.now();
-  if (now - lastTapHandled < 300) return;
-  lastTapHandled = now;
   const rect = canvas.getBoundingClientRect();
   const lx = (clientX - rect.left) * (canvas.width / rect.width);
   const ly = (clientY - rect.top) * (canvas.height / rect.height);
@@ -275,15 +269,10 @@ function handleTap(clientX, clientY, isTouch = false) {
   doFadeIn(audio, 800);
 }
 
-canvas.addEventListener('touchend', e => {
-  if (e.changedTouches.length !== 1) return;
-  handleTap(e.changedTouches[0].clientX, e.changedTouches[0].clientY, true);
-  lastTouchEnd = Date.now();
-});
-
-canvas.addEventListener('click', e => {
-  if (Date.now() - lastTouchEnd < 500) return; // skip synthetic click after touch
-  handleTap(e.clientX, e.clientY);
+canvas.addEventListener('pointerup', e => {
+  if (!e.isPrimary) return;
+  e.preventDefault(); // stops iOS generating a synthetic click after touch
+  handleTap(e.clientX, e.clientY, e.pointerType === 'touch');
 });
 
 window._stopPlanetAudio = () => {
