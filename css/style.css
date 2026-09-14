@@ -173,7 +173,7 @@ h3 { font-size: 1.5rem; }
   z-index: 1;
   display: grid;
   grid-template-columns: 1.1fr .9fr;
-  gap: 3.5rem;
+  gap: 2rem;
   align-items: center;
 }
 
@@ -184,7 +184,7 @@ h3 { font-size: 1.5rem; }
 
 .hero .tagline {
   color: var(--text-dim);
-  font-size: 1.25rem;
+  font-size: 1rem;
   max-width: 46ch;
   margin-bottom: 1.2rem;
 }
