@@ -22,7 +22,7 @@ let currentAudio = null;
 let currentUrl = null;
 let playingPlanet = null;
 let fadeInTimer = null;
-let fadeOutTimer = null;
+let canvasLock = 0; // ms timestamp — blocks double-fire
 
 function planetRadius(progress) {
   return 6 + (progress / 100) * 14;
@@ -39,18 +39,12 @@ function doFadeIn(audio, ms = 800) {
   }, step);
 }
 
-function doFadeOut(audio, ms = 500, done) {
+// Always call this before starting new audio — clears everything synchronously
+function stopAll() {
   if (fadeInTimer) { clearInterval(fadeInTimer); fadeInTimer = null; }
-  if (fadeOutTimer) { clearInterval(fadeOutTimer); fadeOutTimer = null; }
-  const step = 40;
-  fadeOutTimer = setInterval(() => {
-    audio.volume = Math.max(0, audio.volume - step / ms);
-    if (audio.volume <= 0) {
-      clearInterval(fadeOutTimer); fadeOutTimer = null;
-      audio.pause();
-      if (done) done();
-    }
-  }, step);
+  if (playingPlanet) { playingPlanet._tapState = null; playingPlanet = null; }
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  currentUrl = null;
 }
 
 function drawStar(t) {
@@ -93,7 +87,6 @@ function drawPlanets(t) {
     p._y = y;
 
     if (p._tapState === 'playing') {
-      // pulsing ring while playing
       const pulse = 0.5 + 0.5 * Math.sin(t * 0.003);
       ctx.save();
       ctx.strokeStyle = p.color;
@@ -103,15 +96,6 @@ function drawPlanets(t) {
       ctx.shadowColor = p.color;
       ctx.beginPath();
       ctx.arc(x, y, p.radius + 5 + 3 * pulse, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    } else if (p._tapState === 'frozen') {
-      // static white ring — frozen, ready to play
-      ctx.save();
-      ctx.strokeStyle = 'rgba(255,255,255,0.55)';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.arc(x, y, p.radius + 5, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
     }
@@ -143,14 +127,9 @@ function checkHover() {
   }
 
   if (hit) {
-    let hint = '';
-    if (hit._tapState === 'playing') {
-      hint = `<div class="tooltip-progress" style="color:#2dd4bf;margin-top:.4rem">◼ Playing — tap to stop</div>`;
-    } else if (hit._tapState === 'frozen') {
-      hint = hit.audio_url ? `<div class="tooltip-progress" style="color:#60a5fa;margin-top:.4rem">▶ Tap again to play</div>` : '';
-    } else {
-      hint = hit.audio_url ? `<div class="tooltip-progress" style="color:#60a5fa;margin-top:.4rem">▶ Click to play</div>` : '';
-    }
+    const hint = hit._tapState === 'playing'
+      ? `<div class="tooltip-progress" style="color:#2dd4bf;margin-top:.4rem">◼ Playing — click to stop</div>`
+      : hit.audio_url ? `<div class="tooltip-progress" style="color:#60a5fa;margin-top:.4rem">▶ Click to play</div>` : '';
     tooltip.style.display = 'block';
     tooltip.innerHTML = `
       <div class="tooltip-title">${hit.title}</div>
@@ -181,7 +160,7 @@ function frame(t) {
   drawStar(t);
 
   planets.forEach(p => {
-    if (!p._paused && !p._tapState) p.angle += p.speed * (dt / 1000);
+    if (!p._paused && p._tapState !== 'playing') p.angle += p.speed * (dt / 1000);
   });
 
   drawPlanets(t);
@@ -243,83 +222,37 @@ canvas.addEventListener('mouseleave', () => {
   if (hovered) { hovered._paused = false; hovered = null; }
 });
 
-function stopCurrentAudio(fade = 500) {
-  if (playingPlanet) playingPlanet._tapState = null;
-  const a = currentAudio;
-  currentAudio = null; currentUrl = null; playingPlanet = null;
-  if (a) doFadeOut(a, fade);
-}
-
-function startAudio(planet) {
-  document.querySelectorAll('audio').forEach(a => a.pause());
-  const audio = new Audio(planet.audio_url);
-  currentAudio = audio;
-  currentUrl = planet.audio_url;
-  playingPlanet = planet;
-  planet._tapState = 'playing';
-  audio.addEventListener('ended', () => {
-    if (currentAudio === audio) {
-      if (playingPlanet) playingPlanet._tapState = null;
-      playingPlanet = null; currentAudio = null; currentUrl = null;
-    }
-  });
-  doFadeIn(audio, 800);
-}
-
 canvas.addEventListener('pointerup', e => {
   if (!e.isPrimary) return;
   e.preventDefault();
 
+  // 150ms lock — iOS double-fire is ~50ms apart, intentional taps are 200ms+
+  const now = Date.now();
+  if (now - canvasLock < 150) return;
+  canvasLock = now;
+
   const rect = canvas.getBoundingClientRect();
   const lx = (e.clientX - rect.left) * (canvas.width / rect.width);
   const ly = (e.clientY - rect.top) * (canvas.height / rect.height);
-  const isTouch = e.pointerType === 'touch';
-  const hitPad = isTouch ? 30 : 16;
+  const hitPad = e.pointerType === 'touch' ? 30 : 16;
   const hit = planets.find(p => p._x !== undefined && Math.sqrt((p._x - lx) ** 2 + (p._y - ly) ** 2) < p.radius + hitPad);
 
-  if (isTouch) {
-    // Mobile: 2-step — first tap freezes, second tap plays
-    if (!hit) {
-      // tapped empty space: unfreeze any frozen planet
-      planets.forEach(p => { if (p._tapState === 'frozen') p._tapState = null; });
-      return;
-    }
+  const wasPlaying = hit && hit._tapState === 'playing';
+  stopAll(); // always clear state first — no async fade timers to race against
 
-    // per-planet debounce: ignore taps within 300ms of the last state change
-    const now = Date.now();
-    if (hit._lastTap && now - hit._lastTap < 300) return;
-    hit._lastTap = now;
+  if (wasPlaying || !hit || !hit.audio_url) return; // toggled off, missed, or no audio
 
-    if (hit._tapState === 'playing') {
-      stopCurrentAudio(500);
-    } else if (hit._tapState === 'frozen') {
-      if (!hit.audio_url) { hit._tapState = null; return; }
-      if (playingPlanet && playingPlanet !== hit) stopCurrentAudio(300);
-      startAudio(hit);
-    } else {
-      // orbiting → freeze it; unfreeze any other frozen planet first
-      planets.forEach(p => { if (p._tapState === 'frozen') p._tapState = null; });
-      if (playingPlanet && playingPlanet !== hit) stopCurrentAudio(300);
-      hit._tapState = 'frozen';
-    }
-    return;
-  }
-
-  // Desktop: direct click to play/stop (hover already froze the planet)
-  if (!hit) return;
-  if (hit.audio_url && hit.audio_url === currentUrl) {
-    stopCurrentAudio(500);
-    return;
-  }
-  if (currentAudio) stopCurrentAudio(300);
-  if (!hit.audio_url) return;
-  startAudio(hit);
+  // start
+  document.querySelectorAll('audio').forEach(a => a.pause());
+  const audio = new Audio(hit.audio_url);
+  currentAudio = audio;
+  currentUrl = hit.audio_url;
+  playingPlanet = hit;
+  hit._tapState = 'playing';
+  audio.addEventListener('ended', () => { if (currentAudio === audio) stopAll(); });
+  doFadeIn(audio, 800);
 });
 
-window._stopPlanetAudio = () => {
-  if (playingPlanet) playingPlanet._tapState = null;
-  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-  currentUrl = null; playingPlanet = null;
-};
+window._stopPlanetAudio = stopAll;
 
 init();
