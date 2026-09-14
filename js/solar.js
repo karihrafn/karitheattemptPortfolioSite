@@ -237,6 +237,8 @@ canvas.addEventListener('pointerup', e => {
   const hitPad = e.pointerType === 'touch' ? 30 : 16;
   const hit = planets.find(p => p._x !== undefined && Math.sqrt((p._x - lx) ** 2 + (p._y - ly) ** 2) < p.radius + hitPad);
 
+  if (e.pointerType === 'touch') tooltip.style.display = 'none';
+
   const wasPlaying = hit && hit._tapState === 'playing';
   stopAll(); // always clear state first — no async fade timers to race against
 

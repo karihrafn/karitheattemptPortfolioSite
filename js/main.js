@@ -10,6 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
     links.querySelectorAll('a').forEach((link) => {
       link.addEventListener('click', () => links.classList.remove('open'));
     });
+
+    document.addEventListener('click', e => {
+      if (!toggle.contains(e.target) && !links.contains(e.target)) {
+        links.classList.remove('open');
+      }
+    });
   }
 
   document.getElementById('year').textContent = new Date().getFullYear();
