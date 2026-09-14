@@ -24,8 +24,11 @@ Hosted on GitHub Pages at `karitheattempt.com` (CNAME in repo root).
 - Custom cursor (`.cursor` div) — hidden on touch devices via `@media (hover: none)`
 - Cursor turns white (`.on-dark`) when over `.solar-section` (dark background)
 - Audio: track players in `#music` + clickable planets in solar system must not play simultaneously
-  - `window._stopPlanetAudio()` called from main.js when a track starts
+  - `window._stopPlanetAudio` = `stopAll` in solar.js, called from main.js when a track starts
   - `document.querySelectorAll('audio').forEach(a => a.pause())` in solar.js when planet starts
+  - Planet audio uses immediate `.pause()` (no async fade-out) to avoid timer races
+  - `stopAll()` always called first on every tap — clears state synchronously before starting new audio
+  - 150ms `canvasLock` timestamp blocks iOS double-fire events on the canvas
 
 ## Pages
 - `index.html` — home: hero → solar system (#album) → music (#music) → photos (#gallery) → contact (#contact)
@@ -35,6 +38,13 @@ Hosted on GitHub Pages at `karitheattempt.com` (CNAME in repo root).
 ## Audio files
 - Stored in `assets/audio/` as MP3 (WAV originals removed — too large)
 - Three EP tracks: track 1, 2, 3
+
+## Mobile interaction notes
+- Canvas uses `pointerup` (not `click` or `touchend`) — fires once for both touch and mouse
+- `e.preventDefault()` on `pointerup` stops iOS generating a synthetic click after touch
+- Planet stops orbiting while playing (`_tapState === 'playing'`) so user can tap it to stop
+- Tooltip hidden on touch tap (`tooltip.style.display = 'none'` at top of touch path)
+- Nav closes on outside tap via `document.addEventListener('click', ...)` guard
 
 ## Preferences
 - Ponytail mode is active (lazy/minimal — shortest working diff, no speculative abstractions)
