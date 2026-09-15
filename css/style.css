@@ -551,6 +551,8 @@ body, a, button, audio, input, label, select { cursor: none !important; }
 .newsletter-row input[type="email"]::placeholder { color: var(--text-dim); }
 .newsletter-row input[type="email"]:focus { outline: none; border-color: var(--blue-line); }
 
+.newsletter-msg { margin-top: .8rem; color: var(--text-dim); font-size: .95rem; }
+
 @media (max-width: 480px) {
   .newsletter-row { flex-direction: column; }
 }

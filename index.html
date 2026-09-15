@@ -73,14 +73,37 @@
         <p>Get notified when new music drops. No spam, unsubscribe anytime.</p>
       </div>
     </div>
-    <form class="newsletter-form" action="https://newsletter.karitheattempt.com/subscription/form" method="post">
-      <input type="hidden" name="nonce">
-      <input type="hidden" name="l" value="fd7c276e-4f47-4dd1-99e6-95da0e1f2d81">
+    <form class="newsletter-form" id="newsletter-form">
       <div class="newsletter-row">
         <input type="email" name="email" placeholder="your@email.com" required>
         <button type="submit" class="btn btn-primary">Subscribe</button>
       </div>
+      <p class="newsletter-msg" id="newsletter-msg"></p>
     </form>
+    <script>
+      document.getElementById('newsletter-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const msg = document.getElementById('newsletter-msg');
+        const btn = this.querySelector('button');
+        const body = new FormData();
+        body.append('email', this.email.value);
+        body.append('l', 'fd7c276e-4f47-4dd1-99e6-95da0e1f2d81');
+        btn.disabled = true;
+        try {
+          const r = await fetch('https://newsletter.karitheattempt.com/subscription/form', { method: 'POST', body });
+          if (r.ok) {
+            this.querySelector('.newsletter-row').style.display = 'none';
+            msg.textContent = 'Check your inbox for a confirmation email.';
+          } else {
+            msg.textContent = 'Something went wrong. Try again.';
+            btn.disabled = false;
+          }
+        } catch {
+          msg.textContent = 'Something went wrong. Try again.';
+          btn.disabled = false;
+        }
+      });
+    </script>
   </div>
 </section>
 
