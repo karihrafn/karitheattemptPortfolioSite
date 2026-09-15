@@ -90,14 +90,9 @@
         body.append('l', 'fd7c276e-4f47-4dd1-99e6-95da0e1f2d81');
         btn.disabled = true;
         try {
-          const r = await fetch('https://newsletter.karitheattempt.com/subscription/form', { method: 'POST', body });
-          if (r.ok) {
-            this.querySelector('.newsletter-row').style.display = 'none';
-            msg.textContent = 'Check your inbox for a confirmation email.';
-          } else {
-            msg.textContent = 'Something went wrong. Try again.';
-            btn.disabled = false;
-          }
+          await fetch('https://newsletter.karitheattempt.com/subscription/form', { method: 'POST', body, mode: 'no-cors' });
+          this.querySelector('.newsletter-row').style.display = 'none';
+          msg.textContent = 'Check your inbox for a confirmation email.';
         } catch {
           msg.textContent = 'Something went wrong. Try again.';
           btn.disabled = false;
