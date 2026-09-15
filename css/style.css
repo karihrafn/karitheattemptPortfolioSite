@@ -527,6 +527,34 @@ body, a, button, audio, input, label, select { cursor: none !important; }
   font-size: 1rem;
 }
 
+/* ---------- Newsletter ---------- */
+
+.newsletter-form { max-width: 480px; }
+
+.newsletter-row {
+  display: flex;
+  gap: .6rem;
+}
+
+.newsletter-row input[type="email"] {
+  flex: 1;
+  padding: .8rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  cursor: text !important;
+}
+
+.newsletter-row input[type="email"]::placeholder { color: var(--text-dim); }
+.newsletter-row input[type="email"]:focus { outline: none; border-color: var(--blue-line); }
+
+@media (max-width: 480px) {
+  .newsletter-row { flex-direction: column; }
+}
+
 /* ---------- Footer ---------- */
 
 footer.site-footer {
